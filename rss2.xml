@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>浩楠-运维笔记</title>
+    <link>http://example.com/</link>
+    
+    <atom:link href="http://example.com/rss2.xml" rel="self" type="application/rss+xml"/>
+    
+    <description>运维笔记</description>
+    <pubDate>Fri, 04 Aug 2023 03:37:23 GMT</pubDate>
+    <generator>http://hexo.io/</generator>
+    
+    <item>
+      <title>格式测试</title>
+      <link>http://example.com/2023/08/03/%E6%A0%BC%E5%BC%8F%E6%B5%8B%E8%AF%95/</link>
+      <guid>http://example.com/2023/08/03/%E6%A0%BC%E5%BC%8F%E6%B5%8B%E8%AF%95/</guid>
+      <pubDate>Thu, 03 Aug 2023 00:24:00 GMT</pubDate>
+      
+        
+        
+      <description>&lt;div class=&#39;poem&#39;&gt;&lt;div class=&#39;poem-title&#39;&gt;水调歌头&lt;/div&gt;&lt;div class=&#39;poem-author&#39;&gt;苏轼&lt;/div&gt;&lt;p&gt;丙辰中秋，欢饮达旦，大醉，作此篇，兼怀子由。&lt;br&gt;明月几时有？把酒问青天。&lt;br&gt;不知天上宫阙，今夕是</description>
+        
+      
+      
+      
+      <content:encoded><![CDATA[<div class='poem'><div class='poem-title'>水调歌头</div><div class='poem-author'>苏轼</div><p>丙辰中秋，欢饮达旦，大醉，作此篇，兼怀子由。<br>明月几时有？把酒问青天。<br>不知天上宫阙，今夕是何年？<br>我欲乘风归去，又恐琼楼玉宇，高处不胜寒。<br>起舞弄清影，何似在人间？</p><p>转朱阁，低绮户，照无眠。<br>不应有恨，何事长向别时圆？<br>人有悲欢离合，月有阴晴圆缺，此事古难全。<br>但愿人长久，千里共婵娟。</p></div>]]></content:encoded>
+      
+      
+      
+      
+      <comments>http://example.com/2023/08/03/%E6%A0%BC%E5%BC%8F%E6%B5%8B%E8%AF%95/#disqus_thread</comments>
+      
+    </item>
+    
+    <item>
+      <title>ipxe加tftp网络引导方案</title>
+      <link>http://example.com/2023/08/01/ipxe%E5%8A%A0tftp%E7%BD%91%E7%BB%9C%E5%BC%95%E5%AF%BC%E6%96%B9%E6%A1%88/</link>
+      <guid>http://example.com/2023/08/01/ipxe%E5%8A%A0tftp%E7%BD%91%E7%BB%9C%E5%BC%95%E5%AF%BC%E6%96%B9%E6%A1%88/</guid>
+      <pubDate>Tue, 01 Aug 2023 05:53:43 GMT</pubDate>
+      
+      <description>&lt;p&gt;上篇已经讲了pxe的引导方案，这篇是进阶篇ipxe的网络引导方案&lt;br&gt;</description>
+      
+      
+      
+      <content:encoded><![CDATA[<p>上篇已经讲了pxe的引导方案，这篇是进阶篇ipxe的网络引导方案<br><span id="more"></span><br>首先使用ipxe作引导得先需要部署tftp服务器，这个上篇已讲可通过上篇部署，还需要一个http服务器来保存引导文件和镜像。</p><h1 id="http服务器搭建"><a href="#http服务器搭建" class="headerlink" title="http服务器搭建"></a>http服务器搭建</h1><h2 id="安装http服务"><a href="#安装http服务" class="headerlink" title="安装http服务"></a>安装http服务</h2><p> yum -y install httpd</p><h2 id="防火墙放行HTTP服务"><a href="#防火墙放行HTTP服务" class="headerlink" title="防火墙放行HTTP服务"></a>防火墙放行HTTP服务</h2><p> firewall-cmd —list-all<br> firewall-cmd —permanent —add-service=”http”  //防火墙放行服务<br> firewall-cmd —reload   //重新加载防火墙规则<br> firewall-cmd —list-all  //列出防火墙的放行列表</p><h2 id="设置HTTP服务开机自启并启动HTTP服务"><a href="#设置HTTP服务开机自启并启动HTTP服务" class="headerlink" title="设置HTTP服务开机自启并启动HTTP服务"></a>设置HTTP服务开机自启并启动HTTP服务</h2><p> systemctl enable httpd  //设置开机自启动<br> systemctl restart httpd  //重新启动HTTP服务<br> systemctl status httpd  //查看HTTP服务状态</p><h2 id="修改配置文件"><a href="#修改配置文件" class="headerlink" title="修改配置文件"></a>修改配置文件</h2><p> cd /etc/httpd/conf/<br> mv httpd.conf httpd.conf.bak   //将配置文件做备份<br> cat httpd.conf.bak | grep -v “#” | grep -v “^$” &gt; httpd.conf<br>vim httpd.conf<br>ServerRoot “/etc/httpd”</p><p>Listen 80  //HTTP服务端口</p><p>Include conf.modules.d/*.conf</p><p>User apache<br>Group apache</p><p>ServerAdmin root@localhost</p><p><Directory /><br>    AllowOverride none<br>    Require all denied</p><h1 id="DocumentRoot-“-var-www-html”"><a href="#DocumentRoot-“-var-www-html”" class="headerlink" title="DocumentRoot “/var/www/html”"></a>DocumentRoot “/var/www/html”</h1><p>DocumentRoot “/var/www/Bad”  //网页头文件位置</p><p>cd /var/www<br>mkdir Bad //创建文件夹bad</p><h2 id="运行虚拟主机配置"><a href="#运行虚拟主机配置" class="headerlink" title="运行虚拟主机配置"></a>运行虚拟主机配置</h2><p>[root@Server www]# rpm -ql httpd | grep vhosts  //查看虚拟主机软件包<br>/usr/share/doc/httpd-2.4.6/httpd-vhosts.conf<br>[root@Server www]# cp /usr/share//doc/httpd-2.4.6/httpd-vhosts.conf /etc/httpd/conf<br>[root@Server www]# cd /etc/httpd/conf<br>[root@Server conf]# ls<br>httpd.conf  httpd.conf.bak  httpd-vhosts.conf  magic<br>[root@Server conf]# mv httpd-vhosts.conf httpd-vhosts.conf.bak<br>[root@Server conf]# cat httpd-vhosts.conf.bak | grep -v “#” &gt; httpd-vhosts.conf<br>[root@Server conf]# vim httpd-vhosts.conf<br>[root@Server conf]# vim httpd-vhosts.conf</p><VirtualHost *:@@Port@@>    ServerAdmin webmaster@dummy-host.example.com    DocumentRoot "@@ServerRoot@@/docs/dummy-host.example.com"    ServerName dummy-host.example.com    ServerAlias www.dummy-host.example.com    ErrorLog "/var/log/httpd/dummy-host.example.com-error_log"    CustomLog "/var/log/httpd/dummy-host.example.com-access_log" common</VirtualHost><p><VirtualHost www.bad.boy.com>      //配置虚拟域名，也可以配置为访问端口<br>    DocumentRoot /var/www/Bad      //网页头文件的目录<br>    ServerName www.bad.boy.com     //域名地址</VirtualHost><br>[root@Server conf]#<br>重新启动http服务<br>[root@Server ~]# systemctl restart httpd<br>[root@Server ~]# systemctl status httpd<br>httpd.service - The Apache HTTP Server<br>   Loaded: loaded (/usr/lib/systemd/system/httpd.service; enabled)<br>   Active: active (running) since Fri 2021-12-24 12:21:50 CST; 29s ago<br>     Docs: man:httpd(8)<br>           man:apachectl(8)<br>  Process: 8406 ExecStop=/bin/kill -WINCH ${MAINPID} (code=exited, status=0/SUCCESS)<br> Main PID: 8410 (httpd)<br>   Status: “Total requests: 0; Current requests/sec: 0; Current traffic:   0 B/sec”<br>   CGroup: /system.slice/httpd.service<br>           ├─8410 /usr/sbin/httpd -DFOREGROUND<br>           ├─8411 /usr/sbin/httpd -DFOREGROUND<br>           ├─8412 /usr/sbin/httpd -DFOREGROUND<br>           ├─8413 /usr/sbin/httpd -DFOREGROUND<br>           ├─8414 /usr/sbin/httpd -DFOREGROUND<br>           └─8415 /usr/sbin/httpd -DFOREGROUND</p><p>Dec 24 12:21:30 Server systemd[1]: Starting The Apache HTTP Server…<br>Dec 24 12:21:40 Server httpd[8410]: AH00557: httpd: apr_sockaddr_info_ge…er<br>Dec 24 12:21:40 Server httpd[8410]: AH00558: httpd: Could not reliably d…ge<br>Dec 24 12:21:50 Server systemd[1]: Started The Apache HTTP Server.<br>Hint: Some lines were ellipsized, use -l to show in full.<br>[root@Server ~]#<br>然后我们需要把talos的引导文件和镜像文件放在http服务器里</p><h1 id="dhcp服务器配置"><a href="#dhcp服务器配置" class="headerlink" title="dhcp服务器配置"></a>dhcp服务器配置</h1><p>需要修改指定pxe引导程序的名为undionly.kpxe<br>subnet 172.16.102.0  netmask 255.255.255.0 {  //配置网段<br>  range 172.16.102.100 172.16.102.199 ;       //配置地址池<br>  option routers 172.16.102.1 ;               //配置网关<br>  default-lease-time 600;<br>  max-lease-time 7200;<br>  next-server 172.16.102.16;                  //指定tftp服务器的地址}<br>  filename “undionly.kpxe”;                   //指定pxe引导程序的文件名<br>}<br>这样我们就需要找到undionly.kpxe引导了</p><h1 id="编译undionly-kpxe文件"><a href="#编译undionly-kpxe文件" class="headerlink" title="编译undionly.kpxe文件"></a>编译undionly.kpxe文件</h1><p>为了构建iPXE，你至少需要安装以下包:<br>gcc<br>binutils<br>make<br>perl<br>liblzma or xz header files<br>mtools<br>mkisofs or genisoimage or xorrisofs (needed only for building .iso images)<br>syslinux (for isolinux, needed only for building .iso images)<br>执行命令安装以上包：<br>yum install gcc binutils make perl liblzma-dev mtools mkisofs syslinux<br>下载ipxe安装包<br>git clone <a href="https://github.com/ipxe/ipxe.git">https://github.com/ipxe/ipxe.git</a><br>1.编译方法（正常编译）<br>进入scr目录<br>cd ipxe/src<br>执行make编译<br>2.定制化编译：</p><h3 id="http服务器加载内核文件"><a href="#http服务器加载内核文件" class="headerlink" title="http服务器加载内核文件"></a>http服务器加载内核文件</h3><p>先写引导文件：demo.ipxe（名称随便）<br>内容：</p><h1 id="ipxe"><a href="#ipxe" class="headerlink" title="!ipxe"></a>!ipxe</h1><p>dhcp</p><p>set boot-url <a href="http://172.16.102.16:8088/talos/">http://172.16.102.16:8088/talos/</a><br>set menu-timeout 0<br>set submenu-timeout ${menu-timeout}</p><p>\ ### main menu ### //这块是个索引目录</p><p>menu Welcome to system installation</p><p>item talos  Install talos<br>item talos1.2.5  Install talos1.2.5</p><p>choose —default exit —timeout 0 target &amp;&amp; goto ${target}</p><h6 id=""><a href="#" class="headerlink" title="#"></a>#</h6><p>\<br>:talos</p><p>kernel <a href="http://172.16.102.16:8088/talos/v1.3.0/vmlinuz-amd64">http://172.16.102.16:8088/talos/v1.3.0/vmlinuz-amd64</a> initrd=initramfs.xz console=tty0 console=ttyS0 consoleblank=0 earlyprintk=ttyS0 ima_appraise=fix ima_hash=sha512 ima_template=ima-ng init_on_alloc=1  nvme_core.io_timeout=4294967295 printk.devkmsg=on pti=on slab_nomerge talos.platform=metal initrd=initramfs-amd64.xz inst.repo=172.16.102.16:8088/talos/</p><p>initrd <a href="http://172.16.102.16:8088/talos/v1.3.0/initramfs-amd64.xz">http://172.16.102.16:8088/talos/v1.3.0/initramfs-amd64.xz</a>    </p><p>boot </p><p>:talos1.2.5</p><p>kernel <a href="http://172.16.102.16:8088/talos/v1.2.5/vmlinuz-amd64-125">http://172.16.102.16:8088/talos/v1.2.5/vmlinuz-amd64-125</a> console=tty0 console=ttyS0 consoleblank=0 earlyprintk=ttyS0 ima_appraise=fix ima_hash=sha512 ima_template=ima-ng init_on_alloc=1  nvme_core.io_timeout=4294967295 printk.devkmsg=on pti=on slab_nomerge talos.platform=metal initrd=initramfs-amd64.xz inst.repo=172.16.102.16:8088/talos/</p><p>initrd <a href="http://172.16.102.16:8088/talos/v1.2.5/initramfs-125.xz">http://172.16.102.16:8088/talos/v1.2.5/initramfs-125.xz</a></p><p>boot</p><h3 id="tftp下载内核文件和引导"><a href="#tftp下载内核文件和引导" class="headerlink" title="tftp下载内核文件和引导"></a>tftp下载内核文件和引导</h3><p>这种和pxe引导相同把内核文件和引导文件放在tftp服务器内</p><h1 id="ipxe-1"><a href="#ipxe-1" class="headerlink" title="!ipxe"></a>!ipxe</h1><p>dhcp</p><p>kernel vmlinuz  talos.platform=metal earlyprintk=ttyS0 console=ttyS0 console=tty0 init_on_alloc=1 slab_nomerge pti=on consoleblank=0 nvme_core.io_timeout=4294967295 printk.devkmsg=on ima_template=ima-ng ima_appraise=fix ima_hash=sha512   initrd=initramfs  method=ftp://172.16.200.250/<br>initrd initramfs<br>boot </p><h3 id="编译方法"><a href="#编译方法" class="headerlink" title="编译方法"></a>编译方法</h3><p>make bin/undionly.kpxe EMBED=demo.ipxe<br>在bin文件夹下生成undionly.kpxe，将undionly.kpxe文件放在tftp服务器的/var/lib/tftpboot下</p>]]></content:encoded>
+      
+      
+      
+      
+      <comments>http://example.com/2023/08/01/ipxe%E5%8A%A0tftp%E7%BD%91%E7%BB%9C%E5%BC%95%E5%AF%BC%E6%96%B9%E6%A1%88/#disqus_thread</comments>
+      
+    </item>
+    
+    <item>
+      <title>pxe服务器搭建</title>
+      <link>http://example.com/2023/08/01/pxe%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/</link>
+      <guid>http://example.com/2023/08/01/pxe%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/</guid>
+      <pubDate>Tue, 01 Aug 2023 05:29:30 GMT</pubDate>
+      
+      <description>&lt;p&gt;pxe服务器搭建&lt;br&gt;</description>
+      
+      
+      
+      <content:encoded><![CDATA[<p>pxe服务器搭建<br><span id="more"></span></p><h2 id="一-引言"><a href="#一-引言" class="headerlink" title="一.引言"></a>一.引言</h2><p>一般情况下，我们都是利用光驱或U盘引导Linux后，再通过本地安装Linux。但是，这种安装方法在以下的几种情况下就不能适用：<br>1.无软驱和光驱：很多公司为了节省成本，计算机一般都不带光驱或软驱，这样就无法通过本地安装Linux；<br>2.非标准的软驱和光驱：虽然笔记本都会配置光驱，但是并不一定都是标准的IDE设备，有些是通过USB接口，有些是通过1394接口（例如Samsung的Q10）。在Linux安装时所引导的Linux内核一般都不会带这些接口的驱动，所以也无法通过本地安装Linux；<br>3.另外，在一些场合，如机房中，集群化有大量的计算机需要同时安装Linux，如果通过光驱的方式一个个安装，不仅效率低，也不利于维护。<br>集群服务器安装，减少人力及物力开销，压缩安装系统时间，选择器支持 PXE 方式从服务器网卡进行引导的服务器，通过安装服务器的 DHCP 功能分配 ip 地址，由 tftp 软件创建引导服务器安装的引导菜单，再调用 nfs/ftp/http 方式进行安装操作系统。</p><h2 id="二-基本原理"><a href="#二-基本原理" class="headerlink" title="二.基本原理"></a>二.基本原理</h2><h3 id="什么是PXE"><a href="#什么是PXE" class="headerlink" title="什么是PXE"></a>什么是PXE</h3><p>PXE(Pre-boot Execution Environment)是由Intel设计的协议，它可以使计算机通过网络启动。协议分为client和server两端，PXE client在网卡的ROM中，当计算机引导时，BIOS把PXE client调入内存执行，并显示出命令菜单，经用户选择后，PXE client将放置在远端的操作系统通过网络下载到本地运行。<br>PXE协议的成功运行需要解决以下两个问题：<br>1.既然是通过网络传输，那么计算机在启动时，它的IP地址由谁来配置；<br>2.通过什么协议下载Linux内核和根文件系统<br>对于第一个问题，可以通过DHCP Server解决，由DHCP server来给PXE client分配一个IP地址，DHCP Server是用来给DHCP Client动态分配IP地址的协议，不过由于这里是给PXE Client分配IP地址，所以在配置DHCP Server时，需要增加相应的PXE特有配置。<br>至于第二个问题，在PXE client所在的ROM中，已经存在了TFTP Client。PXE Client使用TFTP Client，通过TFTP协议到TFTP Server上下载所需的文件。<br>这样，PXE协议运行的条件就具备了，下面我们就来看看PXE协议的工作过程。</p><h3 id="工作过程"><a href="#工作过程" class="headerlink" title="工作过程"></a>工作过程</h3><p><img src="/pic/工作过程.png" alt="img"><br>在上图中，PXE client是需要安装Linux的计算机，TFTP Server和DHCP Server运行在另外一台Linux Server上。Bootstrap文件、配置文件、Linux内核以及Linux根文件系统都放置在Linux Server上TFTP服务器的根目录下。<br>PXE client在工作过程中，需要三个二进制文件：bootstrap、Linux 内核和Linux根文件系统。Bootstrap文件是可执行程序，它向用户提供简单的控制界面，并根据用户的选择，下载合适的Linux内核以及Linux根文件系统。</p><h3 id="pxe服务器搭建"><a href="#pxe服务器搭建" class="headerlink" title="pxe服务器搭建"></a>pxe服务器搭建</h3><p>PXE系统部署<br>✧ 使用FTP server用来发布linux系统的安装树（也可以使用NFS、HTTP或HTTPS）<br>✧ DHCP server为客户端分配ip并提供TFTP服务器地址及PXE启动文件位置<br>✧ TFTP server为客户端提供引导文件。</p><h4 id="1、安装配置FTP-server"><a href="#1、安装配置FTP-server" class="headerlink" title="1、安装配置FTP server"></a>1、安装配置FTP server</h4><p> yum -y install vsftpd<br> systemctl start vsftpd  开启ftp功能<br>vsftpd的默认配置文件在/etc/vsftpd/vsftpd.conf，共享目录在/var/ftp/下，不用做什么修改就可以直接使用。</p><h4 id="2、安装配置DHCP-server"><a href="#2、安装配置DHCP-server" class="headerlink" title="2、安装配置DHCP server"></a>2、安装配置DHCP server</h4><p> yum -y install dhcp<br>编辑配置文件，这里是很重要的。<br> vim /etc/dhcp/dhcpd.conf<br>例子：<br>default-lease-time 600;<br>max-lease-time 7200;<br>ddns-update-style none;</p><p>subnet 172.16.102.0  netmask 255.255.255.0 {  //配置网段<br>  range 172.16.102.100 172.16.102.199 ;       //配置地址池<br>  option routers 172.16.102.1 ;               //配置网关<br>  default-lease-time 600;<br>  max-lease-time 7200;<br>  next-server 172.16.102.16;                  //指定tftp服务器的地址}<br>  filename “pxelinux.0”;                   //指定pxe引导程序的文件名<br>}</p><p>host 172.16.102.180 {<br>  hardware ethernet 20:ce:2a:71:e1:c7;        //根据mac地址绑定分配的地址信息<br>  fixed-address 172.16.102.180;<br>}</p><p>host 172.16.102.182 {<br>  hardware ethernet 20:ce:2a:71:e6:8f;<br>  fixed-address 172.16.102.182;<br>}</p><p>host 172.16.102.184 {<br>  hardware ethernet 20:ce:2a:71:e5:b7;<br>  fixed-address 172.16.102.184;<br>}</p><p>host 172.16.102.186 {<br>  hardware ethernet 20:ce:2a:71:e2:87;<br>  fixed-address 172.16.102.186;<br>}</p><p>subnet 172.19.66.0 netmask 255.255.255.0 {<br>  range 172.19.66.201 172.19.66.254 ;<br>  option routers 172.19.66.1 ;<br>  default-lease-time 600 ;<br>  max-lease-time 7200;<br>  next-server 172.19.66.2;<br>  filename “undionly.kpxe”;<br>}<br>执行：systemctl start dhcpd  #开启服务<br>systemctl status dhcpd  #查看服务状态（running）<br><img src="/pic/服务状态.png" alt="img"></p><h4 id="3、安装配置TFTP-server-服务器通过-TFTP（Trivial-File-Transfer-Protocol，简单文件传输协议）提供引导镜像文件的下载"><a href="#3、安装配置TFTP-server-服务器通过-TFTP（Trivial-File-Transfer-Protocol，简单文件传输协议）提供引导镜像文件的下载" class="headerlink" title="3、安装配置TFTP server  //服务器通过 TFTP（Trivial File Transfer Protocol，简单文件传输协议）提供引导镜像文件的下载."></a>3、安装配置TFTP server  //服务器通过 TFTP（Trivial File Transfer Protocol，简单文件传输协议）提供引导镜像文件的下载.</h4><p>安装TFTP，然后编辑配置文件，开启开启服务，默认的数据目录/var/lib/tftpboot<br> yum -y install tftp-server xinetd   //安装tftp（tftp依赖于xinetd，所以也要安装xinetd）</p><p>允许外界访问tftp<br> sudo firewall-cmd —add-service=tftp</p><p> vi /etc/xinetd.d/tftp<br>Service    tftp<br>{<br>socket_type             = dgram<br>protocol                = udp<br>wait                    = yes<br>user                    = root<br>server                  = /usr/sbin/in.tftpd<br>server_args             = -s /var/lib/tftpboot<br>disable                 =no   // #将disable=yes 修改为no,no表示开启TFTP服务;<br>per_source              = 11<br>cps                     = 100 2<br>flags                   = IPv4<br>}<br>执行：<br> systemctl start xinetd<br> systemctl start tftp<br> systemctl status tftp 查看服务状态是否在运行<br><img src="/pic/服务状态2.png" alt="img"></p><h4 id="4、安装syslinux：-用来提供pxe的引导程序"><a href="#4、安装syslinux：-用来提供pxe的引导程序" class="headerlink" title="4、安装syslinux：  //用来提供pxe的引导程序"></a>4、安装syslinux：  //用来提供pxe的引导程序</h4><p> yum -y install syslinux<br> rpm -ql syslinux | grep pxelinux   //查找pxe引导程序的位置<br>将pxelinux.0拷贝到tftpboot目录下<br> cp /usr/share/syslinux/pxelinux.0  /var/lib/tftpboot/<br>在/var/lib/tftpboot/ 中新建一个pxelinux.cfg目录<br> mkdir /var/lib/tftpboot/pxelinux.cfg<br>比如我们要装的talos系统<br>将talos系统的启动所需的文件复制到/var/lib/tftpboot/ 目录下（以下红色标注的2个文件）：<br> ls /var/lib/tftpboot/<br>initramfs          （这是一个初始化文件）<br>pxelinux.0        （这文件是为legcay启动，它是legcay的启动镜像）<br>pxelinux.cfg      （该文件夹下放的是启动菜单，手动创建）<br>vmlinuz           （内核文件）<br>【特别说明：talos系统启动文件的获取方法：<br>方法1：从GitHub上直接下载<br><a href="https://github.com/siderolabs/talos/releases">https://github.com/siderolabs/talos/releases</a>  //官网网址<br>方法2：解压ISO文件，进行拷贝<br>下载镜像地址：<br><a href="https://github.com/siderolabs/talos/releases/download/v1.2.5/talos-amd64.iso】">https://github.com/siderolabs/talos/releases/download/v1.2.5/talos-amd64.iso】</a></p><p>在pxelinux.cfg目录下创建名称为default文件<br>创建并配置启动菜单，编写这个文件：<br> vi /var/lib/tftpboot/pxelinux.cfg/default<br>default auto<br>prompt 0<br>ONTIMEOUT local<br>label auto<br>      kernel vmlinuz<br>      append  talos.platform=metal earlyprintk=ttyS0 console=ttyS0 console=tty0 init_on_alloc=1 slab_nomerge pti=on consoleblank=0 nvme_core.io_timeout=4294967295 printk.devkmsg=on ima_template=ima-ng ima_appraise=fix ima_hash=sha512   initrd=initramfs  method=ftp://172.16.200.252/<br>上面部分是声明的一些内核参数，安装所需。<br>禁用防火墙<br> systemctl stop firewalld<br>停止并禁用开机启动<br>sytemctl disable firewalld<br>查看防火墙状态<br> systemctl status firewalld<br>以上就是安装pxe的全部内容</p>]]></content:encoded>
+      
+      
+      
+      
+      <comments>http://example.com/2023/08/01/pxe%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/#disqus_thread</comments>
+      
+    </item>
+    
+    <item>
+      <title>hexo写文章格式说明</title>
+      <link>http://example.com/2023/06/29/%E7%BB%93%E6%9E%84%E6%B5%8B%E8%AF%95/</link>
+      <guid>http://example.com/2023/06/29/%E7%BB%93%E6%9E%84%E6%B5%8B%E8%AF%95/</guid>
+      <pubDate>Thu, 29 Jun 2023 08:41:06 GMT</pubDate>
+      
+      <description>&lt;p&gt;hexo写文章格式说明&lt;br&gt;</description>
+      
+      
+      
+      <content:encoded><![CDATA[<p>hexo写文章格式说明<br><span id="more"></span></p><h1 id="一级标题"><a href="#一级标题" class="headerlink" title="一级标题"></a>一级标题</h1><p>代码测试：<br>\py<br>print(“Hello”)<br>\</p><p>图片测试：</p><p><img src="http://mculover666.cn/blog/20191031/R4mWMXsrRKxu.png?imageslim" alt=""><br><img src="/pic/1690787547948.png" alt="img"></p><p>引用测试：</p><blockquote><p>这是一条引用</p></blockquote><h2 id="二级标题"><a href="#二级标题" class="headerlink" title="二级标题"></a>二级标题</h2><p>无序列表测试：</p><ul><li>哈哈</li><li>嘿嘿</li><li>吼吼</li></ul><h3 id="三级标题"><a href="#三级标题" class="headerlink" title="三级标题"></a>三级标题</h3><h4 id="四级标题"><a href="#四级标题" class="headerlink" title="四级标题"></a>四级标题</h4>]]></content:encoded>
+      
+      
+      
+      
+      <comments>http://example.com/2023/06/29/%E7%BB%93%E6%9E%84%E6%B5%8B%E8%AF%95/#disqus_thread</comments>
+      
+    </item>
+    
+    <item>
+      <title>talos部署文档</title>
+      <link>http://example.com/2023/06/29/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%83%A8%E7%BD%B2/</link>
+      <guid>http://example.com/2023/06/29/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%83%A8%E7%BD%B2/</guid>
+      <pubDate>Thu, 29 Jun 2023 08:41:06 GMT</pubDate>
+      
+      <description>&lt;p&gt;介绍：Talos 是一个容器优化的 Linux 发行版;对Linux对分布式系统（如Kubernetes）的重新构想。 设计尽可能简约，同时仍保持实用性，在拥有更少的资源时，Talos 提供了更多， 安全， 效率， 弹性， 一致性。&lt;br&gt;</description>
+      
+      
+      
+      <content:encoded><![CDATA[<p>介绍：Talos 是一个容器优化的 Linux 发行版;对Linux对分布式系统（如Kubernetes）的重新构想。 设计尽可能简约，同时仍保持实用性，在拥有更少的资源时，Talos 提供了更多， 安全， 效率， 弹性， 一致性。<br><span id="more"></span></p><h1 id="1-裸机设置"><a href="#1-裸机设置" class="headerlink" title="1.裸机设置"></a>1.裸机设置</h1><p>这里采用的是pxe引导的方式，将镜像和引导文件放到http服务器上，然后通过pxe模式进行安装。<br>先进bios设置网络引导：</p><h2 id="1-1-Advanced-gt-pxe-选择legacy模式"><a href="#1-1-Advanced-gt-pxe-选择legacy模式" class="headerlink" title="1.1 Advanced-&gt;pxe 选择legacy模式"></a>1.1 Advanced-&gt;pxe 选择legacy模式</h2><h2 id="1-2-Boot-gt-boot-mode-select-选择legacy模式"><a href="#1-2-Boot-gt-boot-mode-select-选择legacy模式" class="headerlink" title="1.2 Boot-&gt;boot mode select 选择legacy模式"></a>1.2 Boot-&gt;boot mode select 选择legacy模式</h2><h2 id="1-3-Boot-gt-boot-option-1-选择network网络启动模式"><a href="#1-3-Boot-gt-boot-option-1-选择network网络启动模式" class="headerlink" title="1.3 Boot-&gt;boot option #1 选择network网络启动模式"></a>1.3 Boot-&gt;boot option #1 选择network网络启动模式</h2><p>看到dhcp分配地址，获取到了内核和引导文件证明talos系统安装中，当出现页面时证明系统安装完成。</p><h1 id="2-客户端设置"><a href="#2-客户端设置" class="headerlink" title="2.客户端设置"></a>2.客户端设置</h1><p>官方安装方法：talosctl ：它是一个 CLI 工具，它与 Talos API 接口 一种简单的方式。<br>可直接通过浏览器下载，下载你所需要的版本：Release v1.4.4 · siderolabs/talos · GitHub<br>下载Assets 下面的talosctl-linux-amd6这个文件。版本和引导文件和内核文件所用版本一致即可（我们现在用的是1.4.0版本）<br>将其放在/usr/local/bin/下，改名为talosctl并授权chmod  +x  /usr/local/bin/talosctl。<br>执行talosctl 查看是否好用。<br><img src="/pic/图片1.png" alt="img"></p><h1 id="3-Talos配置生成"><a href="#3-Talos配置生成" class="headerlink" title="3.Talos配置生成"></a>3.Talos配置生成</h1><h2 id="3-1-首先准备补丁文件patch-yaml-这个不需要修改直接使用就行"><a href="#3-1-首先准备补丁文件patch-yaml-这个不需要修改直接使用就行" class="headerlink" title="3.1 首先准备补丁文件patch.yaml 这个不需要修改直接使用就行"></a>3.1 首先准备补丁文件patch.yaml 这个不需要修改直接使用就行</h2><p>执行：talosctl gen config mingyang <a href="https://172.16.102.102:6443">https://172.16.102.102:6443</a>  —config-patch-control-plane @patch.yaml<br>会生成三个修改好的文件：controlplane.yaml ，talosconfig，worker.yaml<br>Controlplane.yaml用于下发master节点的服务器，一般单节点或集群都使用这个配置文件。<br>Worker.yaml用于下发worker节点的服务器，一般一主一备的备用节点使用这个配置。<br>Talosconfig用于客户端访问talos系统的配置文件。</p><h2 id="3-2-修改配置文件"><a href="#3-2-修改配置文件" class="headerlink" title="3.2 修改配置文件"></a>3.2 修改配置文件</h2><p>只需要修改controlplane.yaml配置文件当中的网络配置部分的ipv4和ipv6地址以及网关即可：<br>位于machine/network/interfaces/addresses 和machine/network/interfaces/routes的信息。</p><h2 id="3-3配置文件下发"><a href="#3-3配置文件下发" class="headerlink" title="3.3配置文件下发"></a>3.3配置文件下发</h2><p>执行命令：talosctl apply-config —insecure -n 172.16.102.188 —file controlplane.yaml<br>其中-n后面的地址为显示器上显示的dhcp分配的地址不是刚刚修改配置文件的地址。<br>修改talosconfig文件<br>\<br>contexts:<br>    test-cluster:<br>        endpoints:</p><pre><code>        - 172.16.102.118    nodes:        - 172.16.102.118</code></pre><p>\<br>在talosconfig所在目录执行：talosctl config merge ./talosconfig 将配置集成并合并到默认配置文件中。<br>默认配置文件的位置： ~  /root/.talos/config<br>查看默认配置文件</p><h2 id="3-4-cat-root-talos-config"><a href="#3-4-cat-root-talos-config" class="headerlink" title="3.4 cat  /root/.talos/config"></a>3.4 cat  /root/.talos/config</h2><p>现在即可通过这台服务器管理talos系统服务器了</p><h1 id="4-管理系统"><a href="#4-管理系统" class="headerlink" title="4.管理系统"></a>4.管理系统</h1><h2 id="4-1-查看版本信息："><a href="#4-1-查看版本信息：" class="headerlink" title="4.1 查看版本信息："></a>4.1 查看版本信息：</h2><p>talosctl version查看客户端和服务端版本是否一致。</p><h2 id="4-2-查看服务是否正常运行："><a href="#4-2-查看服务是否正常运行：" class="headerlink" title="4.2 查看服务是否正常运行："></a>4.2 查看服务是否正常运行：</h2><p>talosctl service - n +节点IP  //节点IP和裸机设置的静态IP一致，单节点的直接使用talosctl service</p><h2 id="4-3-Etcd状态为准备状态"><a href="#4-3-Etcd状态为准备状态" class="headerlink" title="4.3 Etcd状态为准备状态"></a>4.3 Etcd状态为准备状态</h2><p>执行：talosctl bootstrap —nodes 172.16.102.188此IP上面同理。</p><h1 id="5-查看k8s集群"><a href="#5-查看k8s集群" class="headerlink" title="5.查看k8s集群"></a>5.查看k8s集群</h1><h2 id="5-1-安装kubectl，需要与talos所安装的版本一致"><a href="#5-1-安装kubectl，需要与talos所安装的版本一致" class="headerlink" title="5.1 安装kubectl，需要与talos所安装的版本一致"></a>5.1 安装kubectl，需要与talos所安装的版本一致</h2><p>使用以下命令下载 ：<br>curl -LO <a href="https://dl.k8s.io/release/v1.27.1/bin/linux/amd64/kubectl">https://dl.k8s.io/release/v1.27.1/bin/linux/amd64/kubectl</a><br>sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl</p><h2 id="5-2-授权"><a href="#5-2-授权" class="headerlink" title="5.2 授权"></a>5.2 授权</h2><p>chmod +x  /usr/local/bin/kubectl</p><h2 id="5-3-验证"><a href="#5-3-验证" class="headerlink" title="5.3 验证"></a>5.3 验证</h2><p>执行kubectl version查看版本信息是否相同。</p><h2 id="5-4-访问集群"><a href="#5-4-访问集群" class="headerlink" title="5.4 访问集群"></a>5.4 访问集群</h2><p>执行：talosctl kubeconfig<br>获取到的配置文件在/root/.kube/config路径下这个config文件注意后续需要用</p><h2 id="5-5-查看节点状态"><a href="#5-5-查看节点状态" class="headerlink" title="5.5 查看节点状态"></a>5.5 查看节点状态</h2><p>执行：kubectl get nodes查看节点信息，查看节点详情kubectl describe node或kubectl get nodes -o wide</p><h2 id="5-6-查看pod状态"><a href="#5-6-查看pod状态" class="headerlink" title="5.6 查看pod状态"></a>5.6 查看pod状态</h2><p>执行：kubectl get pods -A(所有)，kubectl get pods -n namespace （查看命名空间下pod状态）</p>]]></content:encoded>
+      
+      
+      <category domain="http://example.com/categories/talos/">talos</category>
+      
+      
+      <category domain="http://example.com/tags/linux/">linux</category>
+      
+      <category domain="http://example.com/tags/talos/">talos</category>
+      
+      
+      <comments>http://example.com/2023/06/29/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%83%A8%E7%BD%B2/#disqus_thread</comments>
+      
+    </item>
+    
+    <item>
+      <title>镜像本地打包发往没有网的服务器</title>
+      <link>http://example.com/2023/06/29/%E5%B0%86%E9%95%9C%E5%83%8F%E6%89%93%E5%8C%85%E4%BC%A0%E5%85%A5%E5%85%B6%E4%BB%96%E6%9C%8D%E5%8A%A1%E5%99%A8/</link>
+      <guid>http://example.com/2023/06/29/%E5%B0%86%E9%95%9C%E5%83%8F%E6%89%93%E5%8C%85%E4%BC%A0%E5%85%A5%E5%85%B6%E4%BB%96%E6%9C%8D%E5%8A%A1%E5%99%A8/</guid>
+      <pubDate>Thu, 29 Jun 2023 08:41:06 GMT</pubDate>
+      
+      <description>&lt;p&gt;使用 docker pull 拉取镜像的时候需要网络，但是项目部署一般都是在内网。内网访问不了外网，所以需要在外 网环境下把需要的镜像拉取下来打包，然后拷贝到内网，载入&lt;br&gt;到内网的docker。下面以redis的镜像为例说明。&lt;br&gt;</description>
+      
+      
+      
+      <content:encoded><![CDATA[<p>使用 docker pull 拉取镜像的时候需要网络，但是项目部署一般都是在内网。内网访问不了外网，所以需要在外 网环境下把需要的镜像拉取下来打包，然后拷贝到内网，载入<br>到内网的docker。下面以redis的镜像为例说明。<br><span id="more"></span></p><p>在外网机器上拉取redis镜像,可以看到外网的docker已经拉取了镜像。</p><ol><li>将镜像打包成tar压缩文件,使用ll命令可以看到打包好的文件<br>[root@localhost ~] docker save -o redis.tar redis:latest<br>[root@localhost ~] ll</li></ol><p>2.将打包好的redis.tar文件下载到U盘等介质(使用ftp工具)拷贝到内网linux并载入docker<br>[root@mail ~] docker load -i redis.tar<br>[root@mail ~] docker images</p>]]></content:encoded>
+      
+      
+      <category domain="http://example.com/categories/docker/">docker</category>
+      
+      
+      <category domain="http://example.com/tags/docker/">docker</category>
+      
+      <category domain="http://example.com/tags/image/">image</category>
+      
+      
+      <comments>http://example.com/2023/06/29/%E5%B0%86%E9%95%9C%E5%83%8F%E6%89%93%E5%8C%85%E4%BC%A0%E5%85%A5%E5%85%B6%E4%BB%96%E6%9C%8D%E5%8A%A1%E5%99%A8/#disqus_thread</comments>
+      
+    </item>
+    
+  </channel>
+</rss>
