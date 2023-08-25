@@ -413,7 +413,7 @@ queueMicrotask(() => {
   setTimeout(
     console.warn.bind(console, "%c S013-782 %c 你现在正处于监控中.", "color:white; background-color:#d9534f", "")
   );
-});</script><script async src="/anzhiyu/random.js"></script><div class="js-pjax"><input type="hidden" name="page-type" id="page-type" value="about"></div><script>window.addEventListener('load', () => {
+});</script><script async src="/anzhiyu/random.js"></script><div class="js-pjax"><input type="hidden" name="page-type" id="page-type" value="about"></div><script src="https://cdn.cbd.int/blueimp-md5@2.19.0/js/md5.min.js"></script><script>window.addEventListener('load', () => {
   const changeContent = (content) => {
     if (content === '') return content
 
@@ -426,6 +426,13 @@ queueMicrotask(() => {
       content = content.substring(0,150) + '...'
     }
     return content
+  }
+
+  const getIcon = (icon, mail) => {
+    if (icon) return icon
+    let defaultIcon = '?d=monsterid'
+    let iconUrl = `https://gravatar.loli.net/avatar/${md5(mail.toLowerCase()) + defaultIcon}`
+    return iconUrl
   }
 
   const generateHtml = array => {
@@ -456,35 +463,40 @@ queueMicrotask(() => {
   }
 
   const getComment = () => {
-    const loadWaline = () => {
-      Waline.RecentComments({
-        serverURL: '',
-        count: 6
-      }).then(({comments}) => {
-        const walineArray = comments.map(e => {
+    const serverURL = 'https://ceh2bpbb.lc-cn-n1-shared.com'
+
+    var settings = {
+      "method": "GET",
+      "headers": {
+        "X-LC-Id": 'Ceh2BpBB4QSzKstCVYBuc914-gzGzoHsz',
+        "X-LC-Key": 'HCFJfsjp5MIHXZ8nW4A948jq',
+        "Content-Type": "application/json"
+      },
+    }
+
+    fetch(`${serverURL}/1.1/classes/Comment?limit=6&order=-createdAt`,settings)
+      .then(response => response.json())
+      .then(data => {
+        const valineArray = data.results.map(function (e) {
           return {
+            'avatar': getIcon(e.QQAvatar, e.mail),
             'content': changeContent(e.comment),
-            'avatar': e.avatar,
             'nick': e.nick,
             'url': e.url + '#' + e.objectId,
-            'date': e.insertedAt,
+            'date': e.updatedAt,
           }
         })
-        saveToLocal.set('waline-newest-comments', JSON.stringify(walineArray), 10/(60*24))
-        generateHtml(walineArray)
+        saveToLocal.set('valine-newest-comments', JSON.stringify(valineArray), 10/(60*24))
+        generateHtml(valineArray)
       }).catch(e => {
         const $dom = document.querySelector('#card-newest-comments .aside-list')
         $dom.innerHTML= "无法获取评论，请确认相关配置是否正确"
       }) 
-    }
-
-    if (typeof Waline === 'object') loadWaline()
-    else getScript('https://cdn.cbd.int/@waline/client@2.14.9/dist/waline.js').then(loadWaline)
   }
 
   const newestCommentInit = () => {
     if (document.querySelector('#card-newest-comments .aside-list')) {
-      const data = saveToLocal.get('waline-newest-comments')
+      const data = saveToLocal.get('valine-newest-comments')
       if (data) {
         generateHtml(JSON.parse(data))
       } else {
